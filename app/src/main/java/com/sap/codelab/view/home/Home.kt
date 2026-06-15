@@ -10,6 +10,7 @@ import android.view.MenuItem
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.coroutineScope
+import dagger.hilt.android.AndroidEntryPoint
 import com.sap.codelab.R
 import com.sap.codelab.databinding.ActivityHomeBinding
 import com.sap.codelab.model.Memo
@@ -21,6 +22,7 @@ import kotlinx.coroutines.launch
 /**
  * The main activity of the app. Shows a list of recorded memos and lets the user add new memos.
  */
+@AndroidEntryPoint
 internal class Home : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding

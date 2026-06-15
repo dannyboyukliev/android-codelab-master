@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import com.sap.codelab.databinding.ActivityViewMemoBinding
 import com.sap.codelab.model.Memo
 import kotlinx.coroutines.launch
@@ -13,6 +14,7 @@ internal const val BUNDLE_MEMO_ID: String = "memoId"
 /**
  * Activity that allows a user to see the details of a memo.
  */
+@AndroidEntryPoint
 internal class ViewMemo : AppCompatActivity() {
 
     private lateinit var binding: ActivityViewMemoBinding

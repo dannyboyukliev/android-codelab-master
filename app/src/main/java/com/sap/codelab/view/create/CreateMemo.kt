@@ -6,6 +6,7 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModelProvider
+import dagger.hilt.android.AndroidEntryPoint
 import com.sap.codelab.R
 import com.sap.codelab.databinding.ActivityCreateMemoBinding
 import com.sap.codelab.utils.extensions.empty
@@ -13,6 +14,7 @@ import com.sap.codelab.utils.extensions.empty
 /**
  * Activity that allows a user to create a new Memo.
  */
+@AndroidEntryPoint
 internal class CreateMemo : AppCompatActivity() {
 
     private lateinit var binding: ActivityCreateMemoBinding
