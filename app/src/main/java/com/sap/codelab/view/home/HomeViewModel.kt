@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.sap.codelab.model.Memo
 import com.sap.codelab.repository.IMemoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -13,7 +13,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 internal class HomeViewModel @Inject constructor(
-    private val repository: IMemoRepository
+    private val repository: IMemoRepository,
+    private val dispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
     private var isShowAll = false
@@ -22,14 +23,14 @@ internal class HomeViewModel @Inject constructor(
 
     fun loadAllMemos() {
         isShowAll = true
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(dispatcher) {
             _memos.value = repository.getAll()
         }
     }
 
     fun loadOpenMemos() {
         isShowAll = false
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(dispatcher) {
             _memos.value = repository.getOpen()
         }
     }
@@ -39,7 +40,7 @@ internal class HomeViewModel @Inject constructor(
     }
 
     fun updateMemo(memo: Memo, isChecked: Boolean) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(dispatcher) {
             if (isChecked) {
                 repository.saveMemo(memo.copy(isDone = true))
             }

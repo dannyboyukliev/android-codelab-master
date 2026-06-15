@@ -6,19 +6,20 @@ import com.sap.codelab.model.Memo
 import com.sap.codelab.repository.IMemoRepository
 import com.sap.codelab.utils.extensions.empty
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 internal class CreateMemoViewModel @Inject constructor(
-    private val repository: IMemoRepository
+    private val repository: IMemoRepository,
+    private val dispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
     private var memo = Memo(0, String.empty(), String.empty(), 0, 0, 0, false)
 
     fun saveMemo() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(dispatcher) {
             repository.saveMemo(memo)
         }
     }
