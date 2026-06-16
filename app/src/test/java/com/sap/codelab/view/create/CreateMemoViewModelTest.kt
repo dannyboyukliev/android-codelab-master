@@ -71,4 +71,15 @@ internal class CreateMemoViewModelTest {
         assertEquals("Title", repository.memos.first().title)
         assertEquals("Description", repository.memos.first().description)
     }
+
+    @Test
+    fun `saveMemo persists picked location to repository`() = runTest {
+        viewModel.setLocation(48.1351, 11.5820)
+        viewModel.updateMemo(title = "Title", description = "Description")
+
+        viewModel.saveMemo()
+
+        assertEquals(48.1351, repository.memos.first().reminderLatitude, 0.0001)
+        assertEquals(11.5820, repository.memos.first().reminderLongitude, 0.0001)
+    }
 }

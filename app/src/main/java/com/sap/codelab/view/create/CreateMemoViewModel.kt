@@ -35,7 +35,12 @@ internal class CreateMemoViewModel @Inject constructor(
     }
 
     fun updateMemo(title: String, description: String) {
-        memo = Memo(title = title, description = description, id = 0, reminderDate = 0, reminderLatitude = 0.0, reminderLongitude = 0.0, isDone = false)
+        memo = memo.copy(
+            title = title,
+            description = description,
+            reminderLatitude = selectedLatitude ?: 0.0,
+            reminderLongitude = selectedLongitude ?: 0.0
+        )
     }
 
     fun isMemoValid(): Boolean = memo.title.isNotBlank() && memo.description.isNotBlank()
