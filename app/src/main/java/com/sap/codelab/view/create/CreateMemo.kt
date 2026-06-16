@@ -10,6 +10,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.sap.codelab.R
 import com.sap.codelab.databinding.ActivityCreateMemoBinding
 import com.sap.codelab.utils.extensions.empty
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
 
 /**
  * Activity that allows a user to create a new Memo.
@@ -19,13 +23,38 @@ internal class CreateMemo : AppCompatActivity() {
 
     private lateinit var binding: ActivityCreateMemoBinding
     private lateinit var model: CreateMemoViewModel
+    private lateinit var map: MapView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // osmdroid requires a user agent to be set before any map is loaded.
+        Configuration.getInstance().userAgentValue = packageName
         binding = ActivityCreateMemoBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
         model = ViewModelProvider(this)[CreateMemoViewModel::class.java]
+        setupMap()
+    }
+
+    /**
+     * Configures the embedded map with a default tile source, zoom and center.
+     */
+    private fun setupMap() {
+        map = binding.contentCreateMemo.map
+        map.setTileSource(TileSourceFactory.MAPNIK)
+        map.setMultiTouchControls(true)
+        map.controller.setZoom(15.0)
+        map.controller.setCenter(GeoPoint(48.1351, 11.5820))
+    }
+
+    override fun onResume() {
+        super.onResume()
+        map.onResume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        map.onPause()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
