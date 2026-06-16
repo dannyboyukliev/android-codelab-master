@@ -17,6 +17,16 @@ internal class CreateMemoViewModel @Inject constructor(
 ) : ViewModel() {
 
     private var memo = Memo(0, String.empty(), String.empty(), 0, 0, 0, false)
+    private var selectedLatitude: Double? = null
+    private var selectedLongitude: Double? = null
+
+    /**
+     * Stores the location the user picked on the map for this memo.
+     */
+    fun setLocation(latitude: Double, longitude: Double) {
+        selectedLatitude = latitude
+        selectedLongitude = longitude
+    }
 
     fun saveMemo() {
         viewModelScope.launch(dispatcher) {

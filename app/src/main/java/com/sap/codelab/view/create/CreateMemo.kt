@@ -11,9 +11,12 @@ import com.sap.codelab.R
 import com.sap.codelab.databinding.ActivityCreateMemoBinding
 import com.sap.codelab.utils.extensions.empty
 import org.osmdroid.config.Configuration
+import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.MapEventsOverlay
+import org.osmdroid.views.overlay.Marker
 
 /**
  * Activity that allows a user to create a new Memo.
@@ -24,6 +27,7 @@ internal class CreateMemo : AppCompatActivity() {
     private lateinit var binding: ActivityCreateMemoBinding
     private lateinit var model: CreateMemoViewModel
     private lateinit var map: MapView
+    private var marker: Marker? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +49,30 @@ internal class CreateMemo : AppCompatActivity() {
         map.setMultiTouchControls(true)
         map.controller.setZoom(15.0)
         map.controller.setCenter(GeoPoint(48.1351, 11.5820))
+
+        val eventsReceiver = object : MapEventsReceiver {
+            override fun singleTapConfirmedHelper(point: GeoPoint): Boolean {
+                setPin(point)
+                return true
+            }
+
+            override fun longPressHelper(point: GeoPoint): Boolean = false
+        }
+        map.overlays.add(MapEventsOverlay(eventsReceiver))
+    }
+
+    /**
+     * Places (or moves) the location pin at the given point and forwards it to the ViewModel.
+     */
+    private fun setPin(point: GeoPoint) {
+        val pin = marker ?: Marker(map).also {
+            it.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+            map.overlays.add(it)
+            marker = it
+        }
+        pin.position = point
+        map.invalidate()
+        model.setLocation(point.latitude, point.longitude)
     }
 
     override fun onResume() {
