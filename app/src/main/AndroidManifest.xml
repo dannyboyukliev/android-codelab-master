@@ -3,6 +3,9 @@
     package="com.sap.codelab">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".repository.App"
@@ -30,6 +33,7 @@
             android:name="com.sap.codelab.view.detail.ViewMemo"
             android:exported="false"
             android:theme="@style/AppTheme.NoActionBar" />
+
     </application>
 
 </manifest>
