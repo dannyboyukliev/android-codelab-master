@@ -5,11 +5,15 @@ import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import androidx.annotation.StringRes
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import com.sap.codelab.R
 import com.sap.codelab.databinding.ActivityCreateMemoBinding
 import com.sap.codelab.utils.extensions.empty
+import kotlinx.coroutines.launch
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -38,6 +42,20 @@ internal class CreateMemo : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         model = ViewModelProvider(this)[CreateMemoViewModel::class.java]
         setupMap()
+        observeUiState()
+    }
+
+    private fun observeUiState() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                model.uiState.collect { state ->
+                    if (state is CreateMemoUiState.Saved) {
+                        setResult(RESULT_OK)
+                        finish()
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -112,8 +130,6 @@ internal class CreateMemo : AppCompatActivity() {
             model.updateMemo(memoTitle.text.toString(), memoDescription.text.toString())
             if (model.isMemoValid()) {
                 model.saveMemo()
-                setResult(RESULT_OK)
-                finish()
             } else {
                 memoTitleContainer.error = getErrorMessage(model.hasTitleError(), R.string.memo_title_empty_error)
                 memoDescription.error = getErrorMessage(model.hasTextError(), R.string.memo_text_empty_error)

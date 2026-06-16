@@ -82,4 +82,13 @@ internal class CreateMemoViewModelTest {
         assertEquals(48.1351, repository.memos.first().reminderLatitude, 0.0001)
         assertEquals(11.5820, repository.memos.first().reminderLongitude, 0.0001)
     }
+
+    @Test
+    fun `saveMemo transitions uiState to Saved`() = runTest {
+        viewModel.updateMemo(title = "Title", description = "Description")
+
+        viewModel.saveMemo()
+
+        assertTrue(viewModel.uiState.value is CreateMemoUiState.Saved)
+    }
 }

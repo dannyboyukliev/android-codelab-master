@@ -7,8 +7,15 @@ import com.sap.codelab.repository.IMemoRepository
 import com.sap.codelab.utils.extensions.empty
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+internal sealed class CreateMemoUiState {
+    object Idle : CreateMemoUiState()
+    object Saved : CreateMemoUiState()
+}
 
 @HiltViewModel
 internal class CreateMemoViewModel @Inject constructor(
@@ -19,6 +26,9 @@ internal class CreateMemoViewModel @Inject constructor(
     private var memo = Memo(0, String.empty(), String.empty(), 0, 0.0, 0.0, false)
     private var selectedLatitude: Double? = null
     private var selectedLongitude: Double? = null
+
+    private val _uiState = MutableStateFlow<CreateMemoUiState>(CreateMemoUiState.Idle)
+    val uiState: StateFlow<CreateMemoUiState> = _uiState
 
     /**
      * Stores the location the user picked on the map for this memo.
@@ -31,6 +41,7 @@ internal class CreateMemoViewModel @Inject constructor(
     fun saveMemo() {
         viewModelScope.launch(dispatcher) {
             repository.saveMemo(memo)
+            _uiState.value = CreateMemoUiState.Saved
         }
     }
 
