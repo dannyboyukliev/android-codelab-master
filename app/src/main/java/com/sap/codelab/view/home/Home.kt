@@ -13,6 +13,8 @@ import androidx.lifecycle.coroutineScope
 import dagger.hilt.android.AndroidEntryPoint
 import com.sap.codelab.R
 import com.sap.codelab.databinding.ActivityHomeBinding
+import com.sap.codelab.utils.extensions.applySystemBarInsets
+import com.sap.codelab.utils.extensions.applySystemBarInsetsAsMargin
 import com.sap.codelab.model.Memo
 import com.sap.codelab.notification.NotificationHelper
 import com.sap.codelab.view.create.CreateMemo
@@ -41,6 +43,9 @@ internal class Home : AppCompatActivity() {
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
+        binding.appBar.applySystemBarInsets(top = true, horizontal = true)
+        binding.contentHome.root.applySystemBarInsets(bottom = true, horizontal = true)
+        binding.fab.applySystemBarInsetsAsMargin(bottom = true, horizontal = true)
         viewModel = ViewModelProvider(this)[HomeViewModel::class.java]
 
         // Setup the adapter and the recycler view

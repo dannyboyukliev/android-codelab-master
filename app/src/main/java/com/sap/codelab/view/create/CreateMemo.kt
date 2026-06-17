@@ -17,6 +17,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import com.sap.codelab.R
 import com.sap.codelab.databinding.ActivityCreateMemoBinding
+import com.sap.codelab.utils.extensions.applySystemBarInsets
 import com.sap.codelab.utils.extensions.empty
 import kotlinx.coroutines.launch
 import org.osmdroid.config.Configuration
@@ -68,6 +69,8 @@ internal class CreateMemo : AppCompatActivity() {
         binding = ActivityCreateMemoBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
+        binding.appBar.applySystemBarInsets(top = true, horizontal = true)
+        binding.contentCreateMemo.root.applySystemBarInsets(bottom = true, horizontal = true)
         viewModel = ViewModelProvider(this)[CreateMemoViewModel::class.java]
         setupMap()
         observeUiState()
