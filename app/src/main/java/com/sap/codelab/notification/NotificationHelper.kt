@@ -10,11 +10,17 @@ import com.sap.codelab.R
 import com.sap.codelab.model.Memo
 import com.sap.codelab.view.detail.BUNDLE_MEMO_ID
 import com.sap.codelab.view.detail.ViewMemo
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 private const val CHANNEL_ID = "geofence_channel"
 private const val CHANNEL_NAME = "Location Reminders"
 
-internal class NotificationHelper(private val context: Context) {
+@Singleton
+internal class NotificationHelper @Inject constructor(
+    @param:ApplicationContext private val context: Context
+) {
 
     init {
         val channel = NotificationChannel(
