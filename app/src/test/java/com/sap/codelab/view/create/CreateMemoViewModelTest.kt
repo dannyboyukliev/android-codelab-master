@@ -30,38 +30,36 @@ internal class CreateMemoViewModelTest {
     }
 
     @Test
-    fun `isMemoValid returns false when title is blank`() {
+    fun `saveMemo emits ValidationFailed with titleError when title is blank`() = runTest {
         viewModel.updateMemo(title = "", description = "Description")
 
-        assertFalse(viewModel.isMemoValid())
+        viewModel.saveMemo()
+
+        val state = viewModel.uiState.value as CreateMemoUiState.ValidationFailed
+        assertTrue(state.titleError)
+        assertFalse(state.textError)
     }
 
     @Test
-    fun `isMemoValid returns false when description is blank`() {
+    fun `saveMemo emits ValidationFailed with textError when description is blank`() = runTest {
         viewModel.updateMemo(title = "Title", description = "")
 
-        assertFalse(viewModel.isMemoValid())
+        viewModel.saveMemo()
+
+        val state = viewModel.uiState.value as CreateMemoUiState.ValidationFailed
+        assertFalse(state.titleError)
+        assertTrue(state.textError)
     }
 
     @Test
-    fun `isMemoValid returns true when title and description are set`() {
-        viewModel.updateMemo(title = "Title", description = "Description")
+    fun `saveMemo emits ValidationFailed with both errors when title and description are blank`() = runTest {
+        viewModel.updateMemo(title = "", description = "")
 
-        assertTrue(viewModel.isMemoValid())
-    }
+        viewModel.saveMemo()
 
-    @Test
-    fun `hasTitleError returns true when title is blank`() {
-        viewModel.updateMemo(title = "", description = "Description")
-
-        assertTrue(viewModel.hasTitleError())
-    }
-
-    @Test
-    fun `hasTextError returns true when description is blank`() {
-        viewModel.updateMemo(title = "Title", description = "")
-
-        assertTrue(viewModel.hasTextError())
+        val state = viewModel.uiState.value as CreateMemoUiState.ValidationFailed
+        assertTrue(state.titleError)
+        assertTrue(state.textError)
     }
 
     @Test
@@ -73,6 +71,26 @@ internal class CreateMemoViewModelTest {
         assertEquals(1, repository.memos.size)
         assertEquals("Title", repository.memos.first().title)
         assertEquals("Description", repository.memos.first().description)
+    }
+
+    @Test
+    fun `setLocation exposes the picked coordinates`() {
+        viewModel.setLocation(48.1351, 11.5820)
+
+        assertTrue(viewModel.hasSelectedLocation())
+        assertEquals(48.1351, viewModel.selectedLatitude!!, 0.0001)
+        assertEquals(11.5820, viewModel.selectedLongitude!!, 0.0001)
+    }
+
+    @Test
+    fun `clearLocation resets the picked coordinates`() {
+        viewModel.setLocation(48.1351, 11.5820)
+
+        viewModel.clearLocation()
+
+        assertFalse(viewModel.hasSelectedLocation())
+        assertEquals(null, viewModel.selectedLatitude)
+        assertEquals(null, viewModel.selectedLongitude)
     }
 
     @Test

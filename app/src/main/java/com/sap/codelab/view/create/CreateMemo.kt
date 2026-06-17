@@ -112,9 +112,18 @@ internal class CreateMemo : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
-                    if (state is CreateMemoUiState.Saved) {
-                        setResult(RESULT_OK)
-                        finish()
+                    when (state) {
+                        is CreateMemoUiState.Saved -> {
+                            setResult(RESULT_OK)
+                            finish()
+                        }
+                        is CreateMemoUiState.ValidationFailed -> {
+                            binding.contentCreateMemo.run {
+                                memoTitleContainer.error = getErrorMessage(state.titleError, R.string.memo_title_empty_error)
+                                memoDescription.error = getErrorMessage(state.textError, R.string.memo_text_empty_error)
+                            }
+                        }
+                        else -> Unit
                     }
                 }
             }
@@ -140,10 +149,20 @@ internal class CreateMemo : AppCompatActivity() {
             override fun longPressHelper(point: GeoPoint): Boolean = false
         }
         map.overlays.add(MapEventsOverlay(eventsReceiver))
-        centerMapOnCurrentLocation()
 
-        binding.contentCreateMemo.locationReminderCheckbox.setOnCheckedChangeListener { _, isChecked ->
+        val lat = viewModel.selectedLatitude
+        val lng = viewModel.selectedLongitude
+        if (lat != null && lng != null) {
+            val point = GeoPoint(lat, lng)
+            setPin(point)
+            map.controller.setCenter(point)
+        } else {
+            centerMapOnCurrentLocation()
+        }
+
+        binding.contentCreateMemo.locationReminderCheckbox.setOnCheckedChangeListener { buttonView, isChecked ->
             map.visibility = if (isChecked) View.VISIBLE else View.GONE
+            if (!buttonView.isPressed) return@setOnCheckedChangeListener
             if (isChecked) {
                 requestPermissionsForLocationReminder()
             } else {
@@ -212,17 +231,9 @@ internal class CreateMemo : AppCompatActivity() {
         }
     }
 
-    /**
-     * Saves the memo if the input is valid; otherwise shows the corresponding error messages.
-     */
     private fun saveMemo() {
         binding.contentCreateMemo.run {
             viewModel.updateMemo(memoTitle.text.toString(), memoDescription.text.toString())
-            if (!viewModel.isMemoValid()) {
-                memoTitleContainer.error = getErrorMessage(viewModel.hasTitleError(), R.string.memo_title_empty_error)
-                memoDescription.error = getErrorMessage(viewModel.hasTextError(), R.string.memo_text_empty_error)
-                return
-            }
             viewModel.saveMemo()
         }
     }
@@ -284,7 +295,7 @@ internal class CreateMemo : AppCompatActivity() {
 
     private fun hasUnsavedChanges(): Boolean {
         return binding.contentCreateMemo.run {
-            memoTitle.text?.isNotEmpty() == true || memoDescription.text?.isNotEmpty() == true || marker != null
+            memoTitle.text?.isNotEmpty() == true || memoDescription.text?.isNotEmpty() == true || viewModel.hasSelectedLocation()
         }
     }
 
