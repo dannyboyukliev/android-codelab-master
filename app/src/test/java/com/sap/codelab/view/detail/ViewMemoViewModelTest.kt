@@ -33,7 +33,7 @@ internal class ViewMemoViewModelTest {
 
     @Test
     fun `loadMemo emits the correct memo`() = runTest {
-        val memo = Memo(id = 1, title = "Title", description = "Desc", reminderDate = 0, reminderLatitude = 0.0, reminderLongitude = 0.0, isDone = false)
+        val memo = Memo(id = 1, title = "Title", description = "Desc", reminderDate = 0, reminderLatitude = null, reminderLongitude = null, isDone = false)
         repository.memos.add(memo)
 
         viewModel.loadMemo(1L)

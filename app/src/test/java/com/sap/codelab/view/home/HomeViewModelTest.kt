@@ -21,8 +21,8 @@ internal class HomeViewModelTest {
     private lateinit var repository: FakeMemoRepository
     private lateinit var viewModel: HomeViewModel
 
-    private val openMemo = Memo(id = 1, title = "Open", description = "Desc", reminderDate = 0, reminderLatitude = 0.0, reminderLongitude = 0.0, isDone = false)
-    private val doneMemo = Memo(id = 2, title = "Done", description = "Desc", reminderDate = 0, reminderLatitude = 0.0, reminderLongitude = 0.0, isDone = true)
+    private val openMemo = Memo(id = 1, title = "Open", description = "Desc", reminderDate = 0, reminderLatitude = null, reminderLongitude = null, isDone = false)
+    private val doneMemo = Memo(id = 2, title = "Done", description = "Desc", reminderDate = 0, reminderLatitude = null, reminderLongitude = null, isDone = true)
 
     @Before
     fun setup() {
@@ -53,7 +53,7 @@ internal class HomeViewModelTest {
         repository.memos.add(openMemo)
         viewModel.loadOpenMemos()
 
-        repository.memos.add(Memo(id = 3, title = "Open2", description = "Desc", reminderDate = 0, reminderLatitude = 0.0, reminderLongitude = 0.0, isDone = false))
+        repository.memos.add(Memo(id = 3, title = "Open2", description = "Desc", reminderDate = 0, reminderLatitude = null, reminderLongitude = null, isDone = false))
         viewModel.refreshMemos()
 
         assertEquals(2, viewModel.memos.value.size)

@@ -82,8 +82,8 @@ internal class CreateMemoViewModelTest {
 
         viewModel.saveMemo()
 
-        assertEquals(48.1351, repository.memos.first().reminderLatitude, 0.0001)
-        assertEquals(11.5820, repository.memos.first().reminderLongitude, 0.0001)
+        assertEquals(48.1351, repository.memos.first().reminderLatitude!!, 0.0001)
+        assertEquals(11.5820, repository.memos.first().reminderLongitude!!, 0.0001)
     }
 
     @Test

@@ -21,7 +21,7 @@ internal class BootReceiverTest {
     private lateinit var geofenceManager: FakeGeofenceManager
 
     private val memoWithLocation = Memo(id = 1, title = "Near Cafe", description = "Pick up coffee", reminderDate = 0, reminderLatitude = 48.1351, reminderLongitude = 11.5820, isDone = false)
-    private val memoWithoutLocation = Memo(id = 2, title = "General", description = "No location", reminderDate = 0, reminderLatitude = 0.0, reminderLongitude = 0.0, isDone = false)
+    private val memoWithoutLocation = Memo(id = 2, title = "General", description = "No location", reminderDate = 0, reminderLatitude = null, reminderLongitude = null, isDone = false)
     private val doneMemoWithLocation = Memo(id = 3, title = "Done", description = "Already done", reminderDate = 0, reminderLatitude = 52.5200, reminderLongitude = 13.4050, isDone = true)
 
     @Before
@@ -73,9 +73,9 @@ internal class BootReceiverTest {
 
     private suspend fun reRegisterAll() {
         repository.getOpen()
-            .filter { it.reminderLatitude != 0.0 || it.reminderLongitude != 0.0 }
+            .filter { it.reminderLatitude != null && it.reminderLongitude != null }
             .forEach { memo ->
-                geofenceManager.add(memo.id, memo.reminderLatitude, memo.reminderLongitude)
+                geofenceManager.add(memo.id, memo.reminderLatitude!!, memo.reminderLongitude!!)
             }
     }
 }
