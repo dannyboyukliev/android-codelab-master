@@ -37,16 +37,14 @@ internal class ViewMemo : AppCompatActivity() {
         binding.contentViewMemo.root.applySystemBarInsets(bottom = true, horizontal = true)
         // Initialize views with the passed memo id
         val viewModel = ViewModelProvider(this)[ViewMemoViewModel::class.java]
-        if (savedInstanceState == null) {
-            // Observe the memo state flow for changes
-            lifecycleScope.launch {
-                viewModel.memo.collect { value ->
-                    value?.let { memo ->
-                        // Update the UI whenever the memo changes
-                        updateUI(memo)
-                    }
+        lifecycleScope.launch {
+            viewModel.memo.collect { value ->
+                value?.let { memo ->
+                    updateUI(memo)
                 }
             }
+        }
+        if (savedInstanceState == null) {
             val id = intent.getLongExtra(BUNDLE_MEMO_ID, -1)
             viewModel.loadMemo(id)
         }
