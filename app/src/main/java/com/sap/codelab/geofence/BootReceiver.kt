@@ -27,9 +27,9 @@ internal class BootReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 repository.getOpen()
-                    .filter { it.reminderLatitude != 0.0 || it.reminderLongitude != 0.0 }
+                    .filter { it.reminderLatitude != null && it.reminderLongitude != null }
                     .forEach { memo ->
-                        geofenceManager.add(memo.id, memo.reminderLatitude, memo.reminderLongitude)
+                        geofenceManager.add(memo.id, memo.reminderLatitude!!, memo.reminderLongitude!!)
                     }
                 if (BuildConfig.DEBUG) Log.d(TAG, "Geofences re-registered after boot")
             } finally {
