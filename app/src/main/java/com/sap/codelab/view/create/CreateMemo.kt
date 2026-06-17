@@ -14,6 +14,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
 import com.sap.codelab.R
 import com.sap.codelab.databinding.ActivityCreateMemoBinding
@@ -39,6 +40,10 @@ internal class CreateMemo : AppCompatActivity() {
     private lateinit var map: MapView
     private var marker: Marker? = null
 
+    private val fusedLocationClient by lazy {
+        LocationServices.getFusedLocationProviderClient(this)
+    }
+
     private val backgroundLocationLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
             // granted or denied — memo saves either way; geofence registration checks the grant later
@@ -49,6 +54,7 @@ internal class CreateMemo : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
             val granted = result[Manifest.permission.ACCESS_FINE_LOCATION] == true
             if (!granted) return@registerForActivityResult
+            centerMapOnCurrentLocation()
             if (needsBackgroundLocation()) {
                 backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
             } else {
@@ -108,6 +114,16 @@ internal class CreateMemo : AppCompatActivity() {
             override fun longPressHelper(point: GeoPoint): Boolean = false
         }
         map.overlays.add(MapEventsOverlay(eventsReceiver))
+        centerMapOnCurrentLocation()
+    }
+
+    @SuppressWarnings("MissingPermission")
+    private fun centerMapOnCurrentLocation() {
+        if (!hasForegroundLocation()) return
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            location ?: return@addOnSuccessListener
+            map.controller.animateTo(GeoPoint(location.latitude, location.longitude))
+        }
     }
 
     /**
