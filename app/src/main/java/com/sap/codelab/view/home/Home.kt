@@ -14,6 +14,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.sap.codelab.R
 import com.sap.codelab.databinding.ActivityHomeBinding
 import com.sap.codelab.model.Memo
+import com.sap.codelab.notification.NotificationHelper
 import com.sap.codelab.view.create.CreateMemo
 import com.sap.codelab.view.detail.BUNDLE_MEMO_ID
 import com.sap.codelab.view.detail.ViewMemo
@@ -48,6 +49,17 @@ internal class Home : AppCompatActivity() {
         binding.fab.setOnClickListener {
             // Handles clicks on the FAB button > creates a new Memo
             createMemoLauncher.launch(Intent(this@Home, CreateMemo::class.java))
+        }
+        binding.contentHome.btnTestNotification.setOnClickListener {
+            val fakeMemo = Memo(
+                id = 1L,
+                title = "Test Memo",
+                description = "This is a test notification body that might be longer than 140 characters to verify truncation works correctly in the status bar.",
+                reminderDate = 0L,
+                reminderLatitude = 0.0,
+                reminderLongitude = 0.0
+            )
+            NotificationHelper(this).notify(fakeMemo)
         }
         viewModel.loadOpenMemos()
     }
