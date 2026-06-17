@@ -49,4 +49,12 @@ internal class GeofenceManager @Inject constructor(
             Log.e(TAG, "Failed to register geofence for memo $memoId", e)
         }
     }
+
+    override suspend fun remove(memoId: Long) {
+        try {
+            client.removeGeofences(listOf(memoId.toString())).await()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to remove geofence for memo $memoId", e)
+        }
+    }
 }
