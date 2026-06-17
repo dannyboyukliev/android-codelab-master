@@ -62,10 +62,11 @@ internal class ViewMemo : AppCompatActivity() {
             memoTitle.isEnabled = false
             memoDescription.isEnabled = false
 
-            val hasLocation = memo.reminderLatitude != 0.0 || memo.reminderLongitude != 0.0
-            if (hasLocation) {
+            val lat = memo.reminderLatitude
+            val lng = memo.reminderLongitude
+            if (lat != null && lng != null) {
                 map.visibility = View.VISIBLE
-                setupMap(GeoPoint(memo.reminderLatitude, memo.reminderLongitude))
+                setupMap(GeoPoint(lat, lng))
             } else {
                 map.visibility = View.GONE
             }

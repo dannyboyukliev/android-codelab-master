@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.sap.codelab.repository.Database
 import com.sap.codelab.repository.IMemoRepository
 import com.sap.codelab.repository.MIGRATION_1_2
+import com.sap.codelab.repository.MIGRATION_2_3
 import com.sap.codelab.repository.MemoDao
 import com.sap.codelab.repository.Repository
 import dagger.Binds
@@ -29,7 +30,7 @@ internal abstract class DatabaseModule {
         @Singleton
         fun provideDatabase(@ApplicationContext context: Context): Database {
             return Room.databaseBuilder(context, Database::class.java, "codelab")
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build()
         }
 

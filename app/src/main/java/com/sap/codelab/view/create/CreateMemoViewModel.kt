@@ -25,7 +25,7 @@ internal class CreateMemoViewModel @Inject constructor(
     private val dispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
-    private var memo = Memo(0, String.empty(), String.empty(), 0, 0.0, 0.0, false)
+    private var memo = Memo(0, String.empty(), String.empty(), 0, null, null, false)
     private var selectedLatitude: Double? = null
     private var selectedLongitude: Double? = null
 
@@ -58,8 +58,8 @@ internal class CreateMemoViewModel @Inject constructor(
         memo = memo.copy(
             title = title,
             description = description,
-            reminderLatitude = selectedLatitude ?: 0.0,
-            reminderLongitude = selectedLongitude ?: 0.0
+            reminderLatitude = selectedLatitude,
+            reminderLongitude = selectedLongitude
         )
     }
 
