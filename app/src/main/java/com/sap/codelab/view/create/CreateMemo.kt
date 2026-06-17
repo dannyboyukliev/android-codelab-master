@@ -96,6 +96,7 @@ internal class CreateMemo : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         binding.appBar.applySystemBarInsets(top = true, horizontal = true)
         binding.contentCreateMemo.root.applySystemBarInsets(bottom = true, horizontal = true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         viewModel = ViewModelProvider(this)[CreateMemoViewModel::class.java]
         setupMap()
         observeUiState()
@@ -191,6 +192,11 @@ internal class CreateMemo : AppCompatActivity() {
      */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+            android.R.id.home -> {
+                finish()
+                true
+            }
+
             R.id.action_save -> {
                 saveMemo()
                 true
