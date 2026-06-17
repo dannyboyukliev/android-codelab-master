@@ -32,7 +32,7 @@ internal class ViewMemo : AppCompatActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
         binding.appBar.applySystemBarInsets(top = true, horizontal = true)
-        binding.contentCreateMemo.root.applySystemBarInsets(bottom = true, horizontal = true)
+        binding.contentViewMemo.root.applySystemBarInsets(bottom = true, horizontal = true)
         // Initialize views with the passed memo id
         val viewModel = ViewModelProvider(this)[ViewMemoViewModel::class.java]
         if (savedInstanceState == null) {
@@ -56,7 +56,7 @@ internal class ViewMemo : AppCompatActivity() {
      * @param memo - the memo whose details are to be displayed.
      */
     private fun updateUI(memo: Memo) {
-        binding.contentCreateMemo.run {
+        binding.contentViewMemo.run {
             memoTitle.setText(memo.title)
             memoDescription.setText(memo.description)
             memoTitle.isEnabled = false
@@ -74,7 +74,7 @@ internal class ViewMemo : AppCompatActivity() {
     }
 
     private fun setupMap(point: GeoPoint) {
-        binding.contentCreateMemo.map.run {
+        binding.contentViewMemo.map.run {
             setTileSource(TileSourceFactory.MAPNIK)
             setMultiTouchControls(false)
             controller.setZoom(15.0)
