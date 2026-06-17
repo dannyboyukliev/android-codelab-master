@@ -16,6 +16,7 @@ import javax.inject.Inject
 internal sealed class CreateMemoUiState {
     object Idle : CreateMemoUiState()
     object Saved : CreateMemoUiState()
+    data class ValidationFailed(val titleError: Boolean, val textError: Boolean) : CreateMemoUiState()
 }
 
 @HiltViewModel
@@ -50,6 +51,12 @@ internal class CreateMemoViewModel @Inject constructor(
     }
 
     fun saveMemo() {
+        val titleError = memo.title.isBlank()
+        val textError = memo.description.isBlank()
+        if (titleError || textError) {
+            _uiState.value = CreateMemoUiState.ValidationFailed(titleError, textError)
+            return
+        }
         viewModelScope.launch(dispatcher) {
             val memoId = repository.saveMemo(memo)
             val lat = selectedLatitude
@@ -69,10 +76,4 @@ internal class CreateMemoViewModel @Inject constructor(
             reminderLongitude = selectedLongitude
         )
     }
-
-    fun isMemoValid(): Boolean = memo.title.isNotBlank() && memo.description.isNotBlank()
-
-    fun hasTextError() = memo.description.isBlank()
-
-    fun hasTitleError() = memo.title.isBlank()
 }
