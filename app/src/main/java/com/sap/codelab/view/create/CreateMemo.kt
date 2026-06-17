@@ -55,6 +55,12 @@ internal class CreateMemo : AppCompatActivity() {
             }
         }
 
+    private val notificationsLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            // granted or denied — proceed to location permission flow either way
+            requestLocationPermissions()
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // osmdroid requires a user agent to be set before any map is loaded.
@@ -161,14 +167,28 @@ internal class CreateMemo : AppCompatActivity() {
                 return
             }
 
-            if (hasForegroundLocation() && !needsBackgroundLocation()) {
-                viewModel.saveMemo()
-            } else if (hasForegroundLocation()) {
-                backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            if (needsNotificationsPermission()) {
+                notificationsLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             } else {
-                foregroundLauncher.launch(foregroundPermissionsToRequest())
+                requestLocationPermissions()
             }
         }
+    }
+
+    private fun requestLocationPermissions() {
+        if (hasForegroundLocation() && !needsBackgroundLocation()) {
+            viewModel.saveMemo()
+        } else if (hasForegroundLocation()) {
+            backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        } else {
+            foregroundLauncher.launch(foregroundPermissionsToRequest())
+        }
+    }
+
+    private fun needsNotificationsPermission(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+                PackageManager.PERMISSION_GRANTED
     }
 
     private fun hasForegroundLocation() =
