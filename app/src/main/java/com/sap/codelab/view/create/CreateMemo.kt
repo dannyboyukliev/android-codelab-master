@@ -29,7 +29,7 @@ import org.osmdroid.views.overlay.Marker
 internal class CreateMemo : AppCompatActivity() {
 
     private lateinit var binding: ActivityCreateMemoBinding
-    private lateinit var model: CreateMemoViewModel
+    private lateinit var viewModel: CreateMemoViewModel
     private lateinit var map: MapView
     private var marker: Marker? = null
 
@@ -40,7 +40,7 @@ internal class CreateMemo : AppCompatActivity() {
         binding = ActivityCreateMemoBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
-        model = ViewModelProvider(this)[CreateMemoViewModel::class.java]
+        viewModel = ViewModelProvider(this)[CreateMemoViewModel::class.java]
         setupMap()
         observeUiState()
     }
@@ -48,7 +48,7 @@ internal class CreateMemo : AppCompatActivity() {
     private fun observeUiState() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                model.uiState.collect { state ->
+                viewModel.uiState.collect { state ->
                     if (state is CreateMemoUiState.Saved) {
                         setResult(RESULT_OK)
                         finish()
@@ -90,7 +90,7 @@ internal class CreateMemo : AppCompatActivity() {
         }
         pin.position = point
         map.invalidate()
-        model.setLocation(point.latitude, point.longitude)
+        viewModel.setLocation(point.latitude, point.longitude)
     }
 
     override fun onResume() {
@@ -127,12 +127,14 @@ internal class CreateMemo : AppCompatActivity() {
      */
     private fun saveMemo() {
         binding.contentCreateMemo.run {
-            model.updateMemo(memoTitle.text.toString(), memoDescription.text.toString())
-            if (model.isMemoValid()) {
-                model.saveMemo()
+            viewModel.updateMemo(memoTitle.text.toString(), memoDescription.text.toString())
+            if (viewModel.isMemoValid()) {
+                viewModel.saveMemo()
+
+
             } else {
-                memoTitleContainer.error = getErrorMessage(model.hasTitleError(), R.string.memo_title_empty_error)
-                memoDescription.error = getErrorMessage(model.hasTextError(), R.string.memo_text_empty_error)
+                memoTitleContainer.error = getErrorMessage(viewModel.hasTitleError(), R.string.memo_title_empty_error)
+                memoDescription.error = getErrorMessage(viewModel.hasTextError(), R.string.memo_text_empty_error)
             }
         }
     }

@@ -26,12 +26,12 @@ import kotlinx.coroutines.launch
 internal class Home : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
-    private lateinit var model: HomeViewModel
+    private lateinit var viewModel: HomeViewModel
     private lateinit var menuItemShowAll: MenuItem
     private lateinit var menuItemShowOpen: MenuItem
     private val createMemoLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
-            model.refreshMemos()
+            viewModel.refreshMemos()
         }
     }
 
@@ -40,7 +40,7 @@ internal class Home : AppCompatActivity() {
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
-        model = ViewModelProvider(this)[HomeViewModel::class.java]
+        viewModel = ViewModelProvider(this)[HomeViewModel::class.java]
 
         // Setup the adapter and the recycler view
         setupRecyclerView(initializeAdapter())
@@ -49,7 +49,7 @@ internal class Home : AppCompatActivity() {
             // Handles clicks on the FAB button > creates a new Memo
             createMemoLauncher.launch(Intent(this@Home, CreateMemo::class.java))
         }
-        model.loadOpenMemos()
+        viewModel.loadOpenMemos()
     }
 
     /**
@@ -61,11 +61,11 @@ internal class Home : AppCompatActivity() {
             showMemo((view.tag as Memo).id)
         }, { checkbox, isChecked ->
             // Implementation for when the user marks a memo as completed
-            model.updateMemo(checkbox.tag as Memo, isChecked)
-            model.refreshMemos()
+            viewModel.updateMemo(checkbox.tag as Memo, isChecked)
+            viewModel.refreshMemos()
         })
         lifecycle.coroutineScope.launch {
-            model.memos.collect { memos ->
+            viewModel.memos.collect { memos ->
                 adapter.setItems(memos)
             }
         }
@@ -107,14 +107,14 @@ internal class Home : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_show_all -> {
-                model.loadAllMemos()
+                viewModel.loadAllMemos()
                 //Switch available menu options
                 menuItemShowAll.isVisible = false
                 menuItemShowOpen.isVisible = true
                 true
             }
             R.id.action_show_open -> {
-                model.loadOpenMemos()
+                viewModel.loadOpenMemos()
                 //Switch available menu options
                 menuItemShowOpen.isVisible = false
                 menuItemShowAll.isVisible = true
