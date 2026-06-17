@@ -34,6 +34,15 @@ internal class HomeViewModelTest {
     }
 
     @Test
+    fun `isShowAll reflects the current filter`() = runTest {
+        viewModel.loadAllMemos()
+        assertTrue(viewModel.isShowAll.value)
+
+        viewModel.loadOpenMemos()
+        assertFalse(viewModel.isShowAll.value)
+    }
+
+    @Test
     fun `loadOpenMemos emits only non-done memos`() = runTest {
         repository.memos.addAll(listOf(openMemo, doneMemo))
 
