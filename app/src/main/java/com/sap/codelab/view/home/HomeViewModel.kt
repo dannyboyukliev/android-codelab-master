@@ -2,6 +2,7 @@ package com.sap.codelab.view.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sap.codelab.geofence.IGeofenceManager
 import com.sap.codelab.model.Memo
 import com.sap.codelab.repository.IMemoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,6 +15,7 @@ import javax.inject.Inject
 @HiltViewModel
 internal class HomeViewModel @Inject constructor(
     private val repository: IMemoRepository,
+    private val geofenceManager: IGeofenceManager,
     private val dispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
@@ -43,6 +45,7 @@ internal class HomeViewModel @Inject constructor(
         viewModelScope.launch(dispatcher) {
             if (isChecked) {
                 repository.saveMemo(memo.copy(isDone = true))
+                geofenceManager.remove(memo.id)
             }
         }
     }

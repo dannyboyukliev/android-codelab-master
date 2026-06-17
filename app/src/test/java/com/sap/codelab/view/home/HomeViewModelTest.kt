@@ -1,5 +1,6 @@
 package com.sap.codelab.view.home
 
+import com.sap.codelab.geofence.FakeGeofenceManager
 import com.sap.codelab.model.Memo
 import com.sap.codelab.repository.FakeMemoRepository
 import com.sap.codelab.util.MainDispatcherRule
@@ -19,6 +20,7 @@ internal class HomeViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var repository: FakeMemoRepository
+    private lateinit var geofenceManager: FakeGeofenceManager
     private lateinit var viewModel: HomeViewModel
 
     private val openMemo = Memo(id = 1, title = "Open", description = "Desc", reminderDate = 0, reminderLatitude = null, reminderLongitude = null, isDone = false)
@@ -27,7 +29,8 @@ internal class HomeViewModelTest {
     @Before
     fun setup() {
         repository = FakeMemoRepository()
-        viewModel = HomeViewModel(repository, mainDispatcherRule.testDispatcher)
+        geofenceManager = FakeGeofenceManager()
+        viewModel = HomeViewModel(repository, geofenceManager, mainDispatcherRule.testDispatcher)
     }
 
     @Test
@@ -86,5 +89,23 @@ internal class HomeViewModelTest {
         viewModel.updateMemo(openMemo, isChecked = false)
 
         assertFalse(repository.memos.first { it.id == openMemo.id }.isDone)
+    }
+
+    @Test
+    fun `updateMemo removes geofence when memo is marked done`() = runTest {
+        repository.memos.add(openMemo)
+
+        viewModel.updateMemo(openMemo, isChecked = true)
+
+        assertEquals(listOf(openMemo.id), geofenceManager.removedGeofenceIds)
+    }
+
+    @Test
+    fun `updateMemo does not remove geofence when unchecked`() = runTest {
+        repository.memos.add(openMemo)
+
+        viewModel.updateMemo(openMemo, isChecked = false)
+
+        assertTrue(geofenceManager.removedGeofenceIds.isEmpty())
     }
 }
