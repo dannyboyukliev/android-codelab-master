@@ -7,6 +7,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
@@ -45,27 +46,30 @@ internal class CreateMemo : AppCompatActivity() {
     }
 
     private val backgroundLocationLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-            // granted or denied — memo saves either way; geofence registration checks the grant later
-            viewModel.saveMemo()
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (!granted) uncheckLocationReminder()
         }
 
     private val foregroundLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
             val granted = result[Manifest.permission.ACCESS_FINE_LOCATION] == true
-            if (!granted) return@registerForActivityResult
+            if (!granted) {
+                uncheckLocationReminder()
+                return@registerForActivityResult
+            }
             centerMapOnCurrentLocation()
             if (needsBackgroundLocation()) {
                 backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-            } else {
-                viewModel.saveMemo()
             }
         }
 
     private val notificationsLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-            // granted or denied — proceed to location permission flow either way
-            requestLocationPermissions()
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (!granted) {
+                uncheckLocationReminder()
+            } else {
+                requestLocationPermissions()
+            }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -115,6 +119,18 @@ internal class CreateMemo : AppCompatActivity() {
         }
         map.overlays.add(MapEventsOverlay(eventsReceiver))
         centerMapOnCurrentLocation()
+
+        binding.contentCreateMemo.locationReminderCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            map.visibility = if (isChecked) View.VISIBLE else View.GONE
+            if (isChecked) {
+                requestPermissionsForLocationReminder()
+            } else {
+                marker?.let { map.overlays.remove(it) }
+                marker = null
+                map.invalidate()
+                viewModel.clearLocation()
+            }
+        }
     }
 
     @SuppressWarnings("MissingPermission")
@@ -180,28 +196,29 @@ internal class CreateMemo : AppCompatActivity() {
                 memoDescription.error = getErrorMessage(viewModel.hasTextError(), R.string.memo_text_empty_error)
                 return
             }
+            viewModel.saveMemo()
+        }
+    }
 
-            if (!viewModel.hasSelectedLocation()) {
-                viewModel.saveMemo()
-                return
-            }
-
-            if (needsNotificationsPermission()) {
-                notificationsLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            } else {
-                requestLocationPermissions()
-            }
+    private fun requestPermissionsForLocationReminder() {
+        if (needsNotificationsPermission()) {
+            notificationsLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            requestLocationPermissions()
         }
     }
 
     private fun requestLocationPermissions() {
-        if (hasForegroundLocation() && !needsBackgroundLocation()) {
-            viewModel.saveMemo()
-        } else if (hasForegroundLocation()) {
+        if (hasForegroundLocation() && !needsBackgroundLocation()) return
+        if (hasForegroundLocation()) {
             backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
         } else {
             foregroundLauncher.launch(foregroundPermissionsToRequest())
         }
+    }
+
+    private fun uncheckLocationReminder() {
+        binding.contentCreateMemo.locationReminderCheckbox.isChecked = false
     }
 
     private fun needsNotificationsPermission(): Boolean {

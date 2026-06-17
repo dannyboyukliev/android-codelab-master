@@ -6,6 +6,7 @@
     <string name="new_memo">New Memo</string>
     <string name="memo_text">Text</string>
     <string name="action_save">Save</string>
+    <string name="memo_add_location_reminder">Add location reminder</string>
     <string name="memo_title_empty_error">Please provide a title for this memo</string>
     <string name="memo_text_empty_error">Please provide a memo description</string>
 </resources>

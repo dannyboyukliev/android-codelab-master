@@ -42,6 +42,11 @@ internal class CreateMemoViewModel @Inject constructor(
 
     fun hasSelectedLocation(): Boolean = selectedLatitude != null && selectedLongitude != null
 
+    fun clearLocation() {
+        selectedLatitude = null
+        selectedLongitude = null
+    }
+
     fun saveMemo() {
         viewModelScope.launch(dispatcher) {
             val memoId = repository.saveMemo(memo)
