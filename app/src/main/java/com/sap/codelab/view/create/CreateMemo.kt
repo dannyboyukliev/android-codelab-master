@@ -118,7 +118,7 @@ internal class CreateMemo : AppCompatActivity() {
                 true
             }
 
-            else             -> super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
