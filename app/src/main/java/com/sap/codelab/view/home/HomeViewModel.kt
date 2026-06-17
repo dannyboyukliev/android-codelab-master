@@ -19,26 +19,27 @@ internal class HomeViewModel @Inject constructor(
     private val dispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
-    private var isShowAll = false
+    private val _isShowAll = MutableStateFlow(false)
+    val isShowAll: StateFlow<Boolean> = _isShowAll
     private val _memos: MutableStateFlow<List<Memo>> = MutableStateFlow(listOf())
     val memos: StateFlow<List<Memo>> = _memos
 
     fun loadAllMemos() {
-        isShowAll = true
+        _isShowAll.value = true
         viewModelScope.launch(dispatcher) {
             _memos.value = repository.getAll()
         }
     }
 
     fun loadOpenMemos() {
-        isShowAll = false
+        _isShowAll.value = false
         viewModelScope.launch(dispatcher) {
             _memos.value = repository.getOpen()
         }
     }
 
     fun refreshMemos() {
-        if (isShowAll) loadAllMemos() else loadOpenMemos()
+        if (_isShowAll.value) loadAllMemos() else loadOpenMemos()
     }
 
     fun updateMemo(memo: Memo, isChecked: Boolean) {

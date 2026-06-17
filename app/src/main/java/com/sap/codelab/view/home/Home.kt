@@ -54,7 +54,7 @@ internal class Home : AppCompatActivity() {
             // Handles clicks on the FAB button > creates a new Memo
             createMemoLauncher.launch(Intent(this@Home, CreateMemo::class.java))
         }
-        viewModel.loadOpenMemos()
+        if (savedInstanceState == null) viewModel.loadOpenMemos() else viewModel.refreshMemos()
     }
 
     /**
@@ -103,6 +103,8 @@ internal class Home : AppCompatActivity() {
         menuInflater.inflate(R.menu.menu_home, menu)
         menuItemShowAll = menu.findItem(R.id.action_show_all)
         menuItemShowOpen = menu.findItem(R.id.action_show_open)
+        menuItemShowAll.isVisible = !viewModel.isShowAll.value
+        menuItemShowOpen.isVisible = viewModel.isShowAll.value
         return true
     }
 
