@@ -13,4 +13,8 @@
     <string name="permission_denied_message">This permission has been permanently denied. Please enable it in app settings to use this feature.</string>
     <string name="permission_denied_open_settings">Open Settings</string>
     <string name="permission_denied_cancel">Cancel</string>
+    <string name="discard_changes_title">Discard changes?</string>
+    <string name="discard_changes_message">You have unsaved changes. Are you sure you want to leave?</string>
+    <string name="discard_changes_confirm">Discard</string>
+    <string name="discard_changes_cancel">Keep editing</string>
 </resources>
