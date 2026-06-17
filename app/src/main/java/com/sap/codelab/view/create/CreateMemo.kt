@@ -7,6 +7,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
@@ -115,6 +116,16 @@ internal class CreateMemo : AppCompatActivity() {
         }
         map.overlays.add(MapEventsOverlay(eventsReceiver))
         centerMapOnCurrentLocation()
+
+        binding.contentCreateMemo.locationReminderCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            map.visibility = if (isChecked) View.VISIBLE else View.GONE
+            if (!isChecked) {
+                marker?.let { map.overlays.remove(it) }
+                marker = null
+                map.invalidate()
+                viewModel.clearLocation()
+            }
+        }
     }
 
     @SuppressWarnings("MissingPermission")
