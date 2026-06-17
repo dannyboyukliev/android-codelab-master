@@ -46,14 +46,17 @@ internal class CreateMemo : AppCompatActivity() {
     }
 
     private val backgroundLocationLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-            // granted or denied — geofence registration handles the outcome at save time
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (!granted) uncheckLocationReminder()
         }
 
     private val foregroundLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
             val granted = result[Manifest.permission.ACCESS_FINE_LOCATION] == true
-            if (!granted) return@registerForActivityResult
+            if (!granted) {
+                uncheckLocationReminder()
+                return@registerForActivityResult
+            }
             centerMapOnCurrentLocation()
             if (needsBackgroundLocation()) {
                 backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
@@ -61,9 +64,12 @@ internal class CreateMemo : AppCompatActivity() {
         }
 
     private val notificationsLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-            // granted or denied — proceed to location permission flow either way
-            requestLocationPermissions()
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (!granted) {
+                uncheckLocationReminder()
+            } else {
+                requestLocationPermissions()
+            }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -209,6 +215,10 @@ internal class CreateMemo : AppCompatActivity() {
         } else {
             foregroundLauncher.launch(foregroundPermissionsToRequest())
         }
+    }
+
+    private fun uncheckLocationReminder() {
+        binding.contentCreateMemo.locationReminderCheckbox.isChecked = false
     }
 
     private fun needsNotificationsPermission(): Boolean {
