@@ -38,17 +38,21 @@ internal class CreateMemo : AppCompatActivity() {
     private lateinit var map: MapView
     private var marker: Marker? = null
 
+    private val backgroundLocationLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            // granted or denied — memo saves either way; geofence registration checks the grant later
+            viewModel.saveMemo()
+        }
+
     private val foregroundLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
             val granted = result[Manifest.permission.ACCESS_FINE_LOCATION] == true
-            if (granted) {
+            if (granted && needsBackgroundLocation()) {
+                backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            } else {
                 viewModel.saveMemo()
             }
         }
-
-    private fun foregroundPermissionsToRequest(): Array<String> = buildList {
-        add(Manifest.permission.ACCESS_FINE_LOCATION)
-    }.toTypedArray()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -156,8 +160,10 @@ internal class CreateMemo : AppCompatActivity() {
                 return
             }
 
-            if (hasForegroundLocation()) {
+            if (hasForegroundLocation() && !needsBackgroundLocation()) {
                 viewModel.saveMemo()
+            } else if (hasForegroundLocation()) {
+                backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
             } else {
                 foregroundLauncher.launch(foregroundPermissionsToRequest())
             }
@@ -168,6 +174,16 @@ internal class CreateMemo : AppCompatActivity() {
         ContextCompat.checkSelfPermission(this,
             Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED
+
+    private fun needsBackgroundLocation(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun foregroundPermissionsToRequest(): Array<String> = buildList {
+        add(Manifest.permission.ACCESS_FINE_LOCATION)
+    }.toTypedArray()
 
     /**
      * Returns the error message if there is an error, or an empty string otherwise.
