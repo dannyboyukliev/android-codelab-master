@@ -76,6 +76,26 @@ internal class CreateMemoViewModelTest {
     }
 
     @Test
+    fun `setLocation exposes the picked coordinates`() {
+        viewModel.setLocation(48.1351, 11.5820)
+
+        assertTrue(viewModel.hasSelectedLocation())
+        assertEquals(48.1351, viewModel.selectedLatitude!!, 0.0001)
+        assertEquals(11.5820, viewModel.selectedLongitude!!, 0.0001)
+    }
+
+    @Test
+    fun `clearLocation resets the picked coordinates`() {
+        viewModel.setLocation(48.1351, 11.5820)
+
+        viewModel.clearLocation()
+
+        assertFalse(viewModel.hasSelectedLocation())
+        assertEquals(null, viewModel.selectedLatitude)
+        assertEquals(null, viewModel.selectedLongitude)
+    }
+
+    @Test
     fun `saveMemo persists picked location to repository`() = runTest {
         viewModel.setLocation(48.1351, 11.5820)
         viewModel.updateMemo(title = "Title", description = "Description")

@@ -26,8 +26,10 @@ internal class CreateMemoViewModel @Inject constructor(
 ) : ViewModel() {
 
     private var memo = Memo(0, String.empty(), String.empty(), 0, null, null, false)
-    private var selectedLatitude: Double? = null
-    private var selectedLongitude: Double? = null
+    var selectedLatitude: Double? = null
+        private set
+    var selectedLongitude: Double? = null
+        private set
 
     private val _uiState = MutableStateFlow<CreateMemoUiState>(CreateMemoUiState.Idle)
     val uiState: StateFlow<CreateMemoUiState> = _uiState

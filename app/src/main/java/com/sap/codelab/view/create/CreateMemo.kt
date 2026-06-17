@@ -140,10 +140,20 @@ internal class CreateMemo : AppCompatActivity() {
             override fun longPressHelper(point: GeoPoint): Boolean = false
         }
         map.overlays.add(MapEventsOverlay(eventsReceiver))
-        centerMapOnCurrentLocation()
 
-        binding.contentCreateMemo.locationReminderCheckbox.setOnCheckedChangeListener { _, isChecked ->
+        val lat = viewModel.selectedLatitude
+        val lng = viewModel.selectedLongitude
+        if (lat != null && lng != null) {
+            val point = GeoPoint(lat, lng)
+            setPin(point)
+            map.controller.setCenter(point)
+        } else {
+            centerMapOnCurrentLocation()
+        }
+
+        binding.contentCreateMemo.locationReminderCheckbox.setOnCheckedChangeListener { buttonView, isChecked ->
             map.visibility = if (isChecked) View.VISIBLE else View.GONE
+            if (!buttonView.isPressed) return@setOnCheckedChangeListener
             if (isChecked) {
                 requestPermissionsForLocationReminder()
             } else {
@@ -284,7 +294,7 @@ internal class CreateMemo : AppCompatActivity() {
 
     private fun hasUnsavedChanges(): Boolean {
         return binding.contentCreateMemo.run {
-            memoTitle.text?.isNotEmpty() == true || memoDescription.text?.isNotEmpty() == true || marker != null
+            memoTitle.text?.isNotEmpty() == true || memoDescription.text?.isNotEmpty() == true || viewModel.hasSelectedLocation()
         }
     }
 
