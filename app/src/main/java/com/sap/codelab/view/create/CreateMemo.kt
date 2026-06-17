@@ -1,10 +1,15 @@
 package com.sap.codelab.view.create
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -32,6 +37,18 @@ internal class CreateMemo : AppCompatActivity() {
     private lateinit var viewModel: CreateMemoViewModel
     private lateinit var map: MapView
     private var marker: Marker? = null
+
+    private val foregroundLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+            val granted = result[Manifest.permission.ACCESS_FINE_LOCATION] == true
+            if (granted) {
+                viewModel.saveMemo()
+            }
+        }
+
+    private fun foregroundPermissionsToRequest(): Array<String> = buildList {
+        add(Manifest.permission.ACCESS_FINE_LOCATION)
+    }.toTypedArray()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -128,16 +145,29 @@ internal class CreateMemo : AppCompatActivity() {
     private fun saveMemo() {
         binding.contentCreateMemo.run {
             viewModel.updateMemo(memoTitle.text.toString(), memoDescription.text.toString())
-            if (viewModel.isMemoValid()) {
-                viewModel.saveMemo()
-
-
-            } else {
+            if (!viewModel.isMemoValid()) {
                 memoTitleContainer.error = getErrorMessage(viewModel.hasTitleError(), R.string.memo_title_empty_error)
                 memoDescription.error = getErrorMessage(viewModel.hasTextError(), R.string.memo_text_empty_error)
+                return
+            }
+
+            if (!viewModel.hasSelectedLocation()) {
+                viewModel.saveMemo()
+                return
+            }
+
+            if (hasForegroundLocation()) {
+                viewModel.saveMemo()
+            } else {
+                foregroundLauncher.launch(foregroundPermissionsToRequest())
             }
         }
     }
+
+    private fun hasForegroundLocation() =
+        ContextCompat.checkSelfPermission(this,
+            Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED
 
     /**
      * Returns the error message if there is an error, or an empty string otherwise.
