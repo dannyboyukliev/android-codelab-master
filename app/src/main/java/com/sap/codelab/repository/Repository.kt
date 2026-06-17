@@ -9,9 +9,7 @@ import javax.inject.Singleton
 internal class Repository @Inject constructor(private val dao: MemoDao) : IMemoRepository {
 
     @WorkerThread
-    override fun saveMemo(memo: Memo) {
-        dao.insert(memo)
-    }
+    override fun saveMemo(memo: Memo): Long = dao.insert(memo)
 
     @WorkerThread
     override fun getOpen(): List<Memo> = dao.getOpen()

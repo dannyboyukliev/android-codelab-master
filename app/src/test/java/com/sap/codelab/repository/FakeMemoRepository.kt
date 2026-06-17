@@ -6,9 +6,10 @@ internal class FakeMemoRepository : IMemoRepository {
 
     val memos = mutableListOf<Memo>()
 
-    override fun saveMemo(memo: Memo) {
+    override fun saveMemo(memo: Memo): Long {
         memos.removeAll { it.id == memo.id }
         memos.add(memo)
+        return memo.id
     }
 
     override fun getAll(): List<Memo> = memos.toList()

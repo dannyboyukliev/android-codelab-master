@@ -2,6 +2,7 @@ package com.sap.codelab.view.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sap.codelab.geofence.IGeofenceManager
 import com.sap.codelab.model.Memo
 import com.sap.codelab.repository.IMemoRepository
 import com.sap.codelab.utils.extensions.empty
@@ -20,6 +21,7 @@ internal sealed class CreateMemoUiState {
 @HiltViewModel
 internal class CreateMemoViewModel @Inject constructor(
     private val repository: IMemoRepository,
+    private val geofenceManager: IGeofenceManager,
     private val dispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
@@ -42,7 +44,12 @@ internal class CreateMemoViewModel @Inject constructor(
 
     fun saveMemo() {
         viewModelScope.launch(dispatcher) {
-            repository.saveMemo(memo)
+            val memoId = repository.saveMemo(memo)
+            val lat = selectedLatitude
+            val lng = selectedLongitude
+            if (lat != null && lng != null) {
+                geofenceManager.add(memoId, lat, lng)
+            }
             _uiState.value = CreateMemoUiState.Saved
         }
     }

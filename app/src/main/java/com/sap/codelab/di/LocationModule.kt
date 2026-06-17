@@ -3,6 +3,9 @@ package com.sap.codelab.di
 import android.content.Context
 import com.google.android.gms.location.GeofencingClient
 import com.google.android.gms.location.LocationServices
+import com.sap.codelab.geofence.GeofenceManager
+import com.sap.codelab.geofence.IGeofenceManager
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -12,10 +15,17 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-internal object LocationModule {
+internal abstract class LocationModule {
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideGeofencingClient(@ApplicationContext context: Context): GeofencingClient =
-        LocationServices.getGeofencingClient(context)
+    abstract fun bindGeofenceManager(impl: GeofenceManager): IGeofenceManager
+
+    companion object {
+
+        @Provides
+        @Singleton
+        fun provideGeofencingClient(@ApplicationContext context: Context): GeofencingClient =
+            LocationServices.getGeofencingClient(context)
+    }
 }

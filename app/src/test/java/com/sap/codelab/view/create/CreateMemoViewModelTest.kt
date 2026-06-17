@@ -1,5 +1,6 @@
 package com.sap.codelab.view.create
 
+import com.sap.codelab.geofence.FakeGeofenceManager
 import com.sap.codelab.repository.FakeMemoRepository
 import com.sap.codelab.util.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -18,12 +19,14 @@ internal class CreateMemoViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var repository: FakeMemoRepository
+    private lateinit var geofenceManager: FakeGeofenceManager
     private lateinit var viewModel: CreateMemoViewModel
 
     @Before
     fun setup() {
         repository = FakeMemoRepository()
-        viewModel = CreateMemoViewModel(repository, mainDispatcherRule.testDispatcher)
+        geofenceManager = FakeGeofenceManager()
+        viewModel = CreateMemoViewModel(repository, geofenceManager, mainDispatcherRule.testDispatcher)
     }
 
     @Test
@@ -90,5 +93,27 @@ internal class CreateMemoViewModelTest {
         viewModel.saveMemo()
 
         assertTrue(viewModel.uiState.value is CreateMemoUiState.Saved)
+    }
+
+    @Test
+    fun `saveMemo registers geofence when location is set`() = runTest {
+        viewModel.setLocation(48.1351, 11.5820)
+        viewModel.updateMemo(title = "Title", description = "Description")
+
+        viewModel.saveMemo()
+
+        assertEquals(1, geofenceManager.addedGeofences.size)
+        val (_, lat, lng) = geofenceManager.addedGeofences.first()
+        assertEquals(48.1351, lat, 0.0001)
+        assertEquals(11.5820, lng, 0.0001)
+    }
+
+    @Test
+    fun `saveMemo does not register geofence when no location is set`() = runTest {
+        viewModel.updateMemo(title = "Title", description = "Description")
+
+        viewModel.saveMemo()
+
+        assertTrue(geofenceManager.addedGeofences.isEmpty())
     }
 }
