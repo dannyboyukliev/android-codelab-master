@@ -47,7 +47,8 @@ internal class CreateMemo : AppCompatActivity() {
     private val foregroundLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
             val granted = result[Manifest.permission.ACCESS_FINE_LOCATION] == true
-            if (granted && needsBackgroundLocation()) {
+            if (!granted) return@registerForActivityResult
+            if (needsBackgroundLocation()) {
                 backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
             } else {
                 viewModel.saveMemo()
