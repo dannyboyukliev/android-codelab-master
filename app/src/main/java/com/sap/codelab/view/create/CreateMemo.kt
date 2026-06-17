@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
@@ -96,9 +97,15 @@ internal class CreateMemo : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         binding.appBar.applySystemBarInsets(top = true, horizontal = true)
         binding.contentCreateMemo.root.applySystemBarInsets(bottom = true, horizontal = true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         viewModel = ViewModelProvider(this)[CreateMemoViewModel::class.java]
         setupMap()
         observeUiState()
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                handleBackNavigation()
+            }
+        })
     }
 
     private fun observeUiState() {
@@ -191,6 +198,11 @@ internal class CreateMemo : AppCompatActivity() {
      */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+            android.R.id.home -> {
+                handleBackNavigation()
+                true
+            }
+
             R.id.action_save -> {
                 saveMemo()
                 true
@@ -256,6 +268,25 @@ internal class CreateMemo : AppCompatActivity() {
     private fun foregroundPermissionsToRequest(): Array<String> = buildList {
         add(Manifest.permission.ACCESS_FINE_LOCATION)
     }.toTypedArray()
+
+    private fun handleBackNavigation() {
+        if (hasUnsavedChanges()) {
+            AlertDialog.Builder(this)
+                .setTitle(R.string.discard_changes_title)
+                .setMessage(R.string.discard_changes_message)
+                .setPositiveButton(R.string.discard_changes_confirm) { _, _ -> finish() }
+                .setNegativeButton(R.string.discard_changes_cancel, null)
+                .show()
+        } else {
+            finish()
+        }
+    }
+
+    private fun hasUnsavedChanges(): Boolean {
+        return binding.contentCreateMemo.run {
+            memoTitle.text?.isNotEmpty() == true || memoDescription.text?.isNotEmpty() == true || marker != null
+        }
+    }
 
     private fun showPermissionPermanentlyDeniedDialog() {
         AlertDialog.Builder(this)
