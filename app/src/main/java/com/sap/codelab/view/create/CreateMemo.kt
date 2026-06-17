@@ -1,17 +1,24 @@
 package com.sap.codelab.view.create
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
 import com.sap.codelab.R
 import com.sap.codelab.databinding.ActivityCreateMemoBinding
+import com.sap.codelab.utils.extensions.applySystemBarInsets
 import com.sap.codelab.utils.extensions.empty
 import kotlinx.coroutines.launch
 import org.osmdroid.config.Configuration
@@ -29,9 +36,37 @@ import org.osmdroid.views.overlay.Marker
 internal class CreateMemo : AppCompatActivity() {
 
     private lateinit var binding: ActivityCreateMemoBinding
-    private lateinit var model: CreateMemoViewModel
+    private lateinit var viewModel: CreateMemoViewModel
     private lateinit var map: MapView
     private var marker: Marker? = null
+
+    private val fusedLocationClient by lazy {
+        LocationServices.getFusedLocationProviderClient(this)
+    }
+
+    private val backgroundLocationLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            // granted or denied — memo saves either way; geofence registration checks the grant later
+            viewModel.saveMemo()
+        }
+
+    private val foregroundLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+            val granted = result[Manifest.permission.ACCESS_FINE_LOCATION] == true
+            if (!granted) return@registerForActivityResult
+            centerMapOnCurrentLocation()
+            if (needsBackgroundLocation()) {
+                backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            } else {
+                viewModel.saveMemo()
+            }
+        }
+
+    private val notificationsLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            // granted or denied — proceed to location permission flow either way
+            requestLocationPermissions()
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,7 +75,9 @@ internal class CreateMemo : AppCompatActivity() {
         binding = ActivityCreateMemoBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
-        model = ViewModelProvider(this)[CreateMemoViewModel::class.java]
+        binding.appBar.applySystemBarInsets(top = true, horizontal = true)
+        binding.contentCreateMemo.root.applySystemBarInsets(bottom = true, horizontal = true)
+        viewModel = ViewModelProvider(this)[CreateMemoViewModel::class.java]
         setupMap()
         observeUiState()
     }
@@ -48,7 +85,7 @@ internal class CreateMemo : AppCompatActivity() {
     private fun observeUiState() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                model.uiState.collect { state ->
+                viewModel.uiState.collect { state ->
                     if (state is CreateMemoUiState.Saved) {
                         setResult(RESULT_OK)
                         finish()
@@ -77,6 +114,16 @@ internal class CreateMemo : AppCompatActivity() {
             override fun longPressHelper(point: GeoPoint): Boolean = false
         }
         map.overlays.add(MapEventsOverlay(eventsReceiver))
+        centerMapOnCurrentLocation()
+    }
+
+    @SuppressWarnings("MissingPermission")
+    private fun centerMapOnCurrentLocation() {
+        if (!hasForegroundLocation()) return
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            location ?: return@addOnSuccessListener
+            map.controller.animateTo(GeoPoint(location.latitude, location.longitude))
+        }
     }
 
     /**
@@ -90,7 +137,7 @@ internal class CreateMemo : AppCompatActivity() {
         }
         pin.position = point
         map.invalidate()
-        model.setLocation(point.latitude, point.longitude)
+        viewModel.setLocation(point.latitude, point.longitude)
     }
 
     override fun onResume() {
@@ -118,7 +165,7 @@ internal class CreateMemo : AppCompatActivity() {
                 true
             }
 
-            else             -> super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -127,15 +174,56 @@ internal class CreateMemo : AppCompatActivity() {
      */
     private fun saveMemo() {
         binding.contentCreateMemo.run {
-            model.updateMemo(memoTitle.text.toString(), memoDescription.text.toString())
-            if (model.isMemoValid()) {
-                model.saveMemo()
+            viewModel.updateMemo(memoTitle.text.toString(), memoDescription.text.toString())
+            if (!viewModel.isMemoValid()) {
+                memoTitleContainer.error = getErrorMessage(viewModel.hasTitleError(), R.string.memo_title_empty_error)
+                memoDescription.error = getErrorMessage(viewModel.hasTextError(), R.string.memo_text_empty_error)
+                return
+            }
+
+            if (!viewModel.hasSelectedLocation()) {
+                viewModel.saveMemo()
+                return
+            }
+
+            if (needsNotificationsPermission()) {
+                notificationsLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             } else {
-                memoTitleContainer.error = getErrorMessage(model.hasTitleError(), R.string.memo_title_empty_error)
-                memoDescription.error = getErrorMessage(model.hasTextError(), R.string.memo_text_empty_error)
+                requestLocationPermissions()
             }
         }
     }
+
+    private fun requestLocationPermissions() {
+        if (hasForegroundLocation() && !needsBackgroundLocation()) {
+            viewModel.saveMemo()
+        } else if (hasForegroundLocation()) {
+            backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        } else {
+            foregroundLauncher.launch(foregroundPermissionsToRequest())
+        }
+    }
+
+    private fun needsNotificationsPermission(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+                PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun hasForegroundLocation() =
+        ContextCompat.checkSelfPermission(this,
+            Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED
+
+    private fun needsBackgroundLocation(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun foregroundPermissionsToRequest(): Array<String> = buildList {
+        add(Manifest.permission.ACCESS_FINE_LOCATION)
+    }.toTypedArray()
 
     /**
      * Returns the error message if there is an error, or an empty string otherwise.

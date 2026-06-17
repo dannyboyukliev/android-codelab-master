@@ -8,6 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import com.sap.codelab.databinding.ActivityViewMemoBinding
 import com.sap.codelab.model.Memo
+import com.sap.codelab.utils.extensions.applySystemBarInsets
 import kotlinx.coroutines.launch
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -30,12 +31,14 @@ internal class ViewMemo : AppCompatActivity() {
         binding = ActivityViewMemoBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
+        binding.appBar.applySystemBarInsets(top = true, horizontal = true)
+        binding.contentCreateMemo.root.applySystemBarInsets(bottom = true, horizontal = true)
         // Initialize views with the passed memo id
-        val model = ViewModelProvider(this)[ViewMemoViewModel::class.java]
+        val viewModel = ViewModelProvider(this)[ViewMemoViewModel::class.java]
         if (savedInstanceState == null) {
             // Observe the memo state flow for changes
             lifecycleScope.launch {
-                model.memo.collect { value ->
+                viewModel.memo.collect { value ->
                     value?.let { memo ->
                         // Update the UI whenever the memo changes
                         updateUI(memo)
@@ -43,7 +46,7 @@ internal class ViewMemo : AppCompatActivity() {
                 }
             }
             val id = intent.getLongExtra(BUNDLE_MEMO_ID, -1)
-            model.loadMemo(id)
+            viewModel.loadMemo(id)
         }
     }
 
@@ -59,10 +62,11 @@ internal class ViewMemo : AppCompatActivity() {
             memoTitle.isEnabled = false
             memoDescription.isEnabled = false
 
-            val hasLocation = memo.reminderLatitude != 0.0 || memo.reminderLongitude != 0.0
-            if (hasLocation) {
+            val lat = memo.reminderLatitude
+            val lng = memo.reminderLongitude
+            if (lat != null && lng != null) {
                 map.visibility = View.VISIBLE
-                setupMap(GeoPoint(memo.reminderLatitude, memo.reminderLongitude))
+                setupMap(GeoPoint(lat, lng))
             } else {
                 map.visibility = View.GONE
             }

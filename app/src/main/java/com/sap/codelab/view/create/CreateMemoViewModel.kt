@@ -2,6 +2,7 @@ package com.sap.codelab.view.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sap.codelab.geofence.IGeofenceManager
 import com.sap.codelab.model.Memo
 import com.sap.codelab.repository.IMemoRepository
 import com.sap.codelab.utils.extensions.empty
@@ -20,10 +21,11 @@ internal sealed class CreateMemoUiState {
 @HiltViewModel
 internal class CreateMemoViewModel @Inject constructor(
     private val repository: IMemoRepository,
+    private val geofenceManager: IGeofenceManager,
     private val dispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
-    private var memo = Memo(0, String.empty(), String.empty(), 0, 0.0, 0.0, false)
+    private var memo = Memo(0, String.empty(), String.empty(), 0, null, null, false)
     private var selectedLatitude: Double? = null
     private var selectedLongitude: Double? = null
 
@@ -38,9 +40,16 @@ internal class CreateMemoViewModel @Inject constructor(
         selectedLongitude = longitude
     }
 
+    fun hasSelectedLocation(): Boolean = selectedLatitude != null && selectedLongitude != null
+
     fun saveMemo() {
         viewModelScope.launch(dispatcher) {
-            repository.saveMemo(memo)
+            val memoId = repository.saveMemo(memo)
+            val lat = selectedLatitude
+            val lng = selectedLongitude
+            if (lat != null && lng != null) {
+                geofenceManager.add(memoId, lat, lng)
+            }
             _uiState.value = CreateMemoUiState.Saved
         }
     }
@@ -49,8 +58,8 @@ internal class CreateMemoViewModel @Inject constructor(
         memo = memo.copy(
             title = title,
             description = description,
-            reminderLatitude = selectedLatitude ?: 0.0,
-            reminderLongitude = selectedLongitude ?: 0.0
+            reminderLatitude = selectedLatitude,
+            reminderLongitude = selectedLongitude
         )
     }
 

@@ -3,6 +3,10 @@
     package="com.sap.codelab">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:name=".repository.App"
@@ -30,6 +34,19 @@
             android:name="com.sap.codelab.view.detail.ViewMemo"
             android:exported="false"
             android:theme="@style/AppTheme.NoActionBar" />
+
+        <receiver
+            android:name=".geofence.GeofenceBroadcastReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".geofence.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>
