@@ -1,15 +1,19 @@
 package com.sap.codelab.view.create
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -47,7 +51,12 @@ internal class CreateMemo : AppCompatActivity() {
 
     private val backgroundLocationLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            if (!granted) uncheckLocationReminder()
+            if (!granted) {
+                uncheckLocationReminder()
+                if (!shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+                    showPermissionPermanentlyDeniedDialog()
+                }
+            }
         }
 
     private val foregroundLauncher =
@@ -55,6 +64,9 @@ internal class CreateMemo : AppCompatActivity() {
             val granted = result[Manifest.permission.ACCESS_FINE_LOCATION] == true
             if (!granted) {
                 uncheckLocationReminder()
+                if (!shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    showPermissionPermanentlyDeniedDialog()
+                }
                 return@registerForActivityResult
             }
             centerMapOnCurrentLocation()
@@ -67,6 +79,9 @@ internal class CreateMemo : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             if (!granted) {
                 uncheckLocationReminder()
+                if (!shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                    showPermissionPermanentlyDeniedDialog()
+                }
             } else {
                 requestLocationPermissions()
             }
@@ -241,6 +256,20 @@ internal class CreateMemo : AppCompatActivity() {
     private fun foregroundPermissionsToRequest(): Array<String> = buildList {
         add(Manifest.permission.ACCESS_FINE_LOCATION)
     }.toTypedArray()
+
+    private fun showPermissionPermanentlyDeniedDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.permission_denied_title)
+            .setMessage(R.string.permission_denied_message)
+            .setPositiveButton(R.string.permission_denied_open_settings) { _, _ ->
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", packageName, null)
+                }
+                startActivity(intent)
+            }
+            .setNegativeButton(R.string.permission_denied_cancel, null)
+            .show()
+    }
 
     /**
      * Returns the error message if there is an error, or an empty string otherwise.
