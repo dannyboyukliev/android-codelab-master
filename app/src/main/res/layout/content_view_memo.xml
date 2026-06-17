@@ -6,8 +6,8 @@
     android:layout_height="match_parent"
     android:padding="@dimen/padding_activity"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.sap.codelab.view.create.CreateMemo"
-    tools:showIn="@layout/activity_create_memo">
+    tools:context="com.sap.codelab.view.detail.ViewMemo"
+    tools:showIn="@layout/activity_view_memo">
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/memo_title_container"
@@ -39,15 +39,6 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <com.google.android.material.checkbox.MaterialCheckBox
-        android:id="@+id/location_reminder_checkbox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/padding_activity"
-        android:text="@string/memo_add_location_reminder"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/memo_description_container" />
-
     <org.osmdroid.views.MapView
         android:id="@+id/map"
         android:layout_width="match_parent"
@@ -55,6 +46,6 @@
         android:layout_marginTop="@dimen/padding_activity"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/location_reminder_checkbox" />
+        app:layout_constraintTop_toBottomOf="@id/memo_description_container" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -10,7 +10,7 @@ internal interface IMemoRepository {
     /**
      * Saves the given memo to the database.
      */
-    fun saveMemo(memo: Memo)
+    fun saveMemo(memo: Memo): Long
 
     /**
      * @return all memos currently in the database.

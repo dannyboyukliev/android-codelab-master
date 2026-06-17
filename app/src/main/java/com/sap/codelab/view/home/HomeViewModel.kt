@@ -2,62 +2,51 @@ package com.sap.codelab.view.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sap.codelab.geofence.IGeofenceManager
 import com.sap.codelab.model.Memo
-import com.sap.codelab.repository.Repository
-import com.sap.codelab.utils.coroutines.ScopeProvider
-import kotlinx.coroutines.Dispatchers
+import com.sap.codelab.repository.IMemoRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-/**
- * ViewModel for the Home Activity.
- */
-internal class HomeViewModel : ViewModel() {
+@HiltViewModel
+internal class HomeViewModel @Inject constructor(
+    private val repository: IMemoRepository,
+    private val geofenceManager: IGeofenceManager,
+    private val dispatcher: CoroutineDispatcher
+) : ViewModel() {
 
-    private var isShowAll = false
+    private val _isShowAll = MutableStateFlow(false)
+    val isShowAll: StateFlow<Boolean> = _isShowAll
     private val _memos: MutableStateFlow<List<Memo>> = MutableStateFlow(listOf())
     val memos: StateFlow<List<Memo>> = _memos
 
-    /**
-     * Loads all memos.
-     */
     fun loadAllMemos() {
-        isShowAll = true
-        viewModelScope.launch(Dispatchers.Default) {
-            _memos.value = Repository.getAll()
+        _isShowAll.value = true
+        viewModelScope.launch(dispatcher) {
+            _memos.value = repository.getAll()
         }
     }
 
-    /**
-     * Loads all open (not done) memos.
-     */
     fun loadOpenMemos() {
-        isShowAll = false
-        viewModelScope.launch(Dispatchers.Default) {
-            _memos.value = Repository.getOpen()
+        _isShowAll.value = false
+        viewModelScope.launch(dispatcher) {
+            _memos.value = repository.getOpen()
         }
     }
 
     fun refreshMemos() {
-        if (isShowAll) {
-            loadAllMemos()
-        } else {
-            loadOpenMemos()
-        }
+        if (_isShowAll.value) loadAllMemos() else loadOpenMemos()
     }
 
-    /**
-     * Updates the given memo, marking it as done if isChecked is true.
-     *
-     * @param memo      - the memo to update.
-     * @param isChecked - whether the memo has been checked (marked as done).
-     */
     fun updateMemo(memo: Memo, isChecked: Boolean) {
-        ScopeProvider.application.launch(Dispatchers.Default) {
-            // We'll only forward the update if the memo has been checked, since we don't offer to uncheck memos right now
+        viewModelScope.launch(dispatcher) {
             if (isChecked) {
-                Repository.saveMemo(memo.copy(isDone = true))
+                repository.saveMemo(memo.copy(isDone = true))
+                geofenceManager.remove(memo.id)
             }
         }
     }
