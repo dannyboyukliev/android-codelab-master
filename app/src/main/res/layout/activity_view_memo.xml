@@ -22,5 +22,5 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <include android:id="@+id/content_create_memo" layout="@layout/content_create_memo" />
+    <include android:id="@+id/content_view_memo" layout="@layout/content_view_memo" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
