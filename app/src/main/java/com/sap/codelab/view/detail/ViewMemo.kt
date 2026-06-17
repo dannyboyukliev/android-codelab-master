@@ -62,18 +62,23 @@ internal class ViewMemo : AppCompatActivity() {
             val hasLocation = memo.reminderLatitude != 0.0 || memo.reminderLongitude != 0.0
             if (hasLocation) {
                 map.visibility = View.VISIBLE
-                map.setTileSource(TileSourceFactory.MAPNIK)
-                map.setMultiTouchControls(false)
-                val point = GeoPoint(memo.reminderLatitude, memo.reminderLongitude)
-                map.controller.setZoom(15.0)
-                map.controller.setCenter(point)
-                val marker = Marker(map)
-                marker.position = point
-                marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                map.overlays.add(marker)
+                setupMap(GeoPoint(memo.reminderLatitude, memo.reminderLongitude))
             } else {
                 map.visibility = View.GONE
             }
+        }
+    }
+
+    private fun setupMap(point: GeoPoint) {
+        binding.contentCreateMemo.map.run {
+            setTileSource(TileSourceFactory.MAPNIK)
+            setMultiTouchControls(false)
+            controller.setZoom(15.0)
+            controller.setCenter(point)
+            val marker = Marker(this)
+            marker.position = point
+            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+            overlays.add(marker)
         }
     }
 }
