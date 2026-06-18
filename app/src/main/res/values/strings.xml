@@ -7,6 +7,7 @@
     <string name="memo_text">Text</string>
     <string name="action_save">Save</string>
     <string name="memo_add_location_reminder">Add location reminder</string>
+    <string name="memo_map_hint">Tap on the map to set a reminder location</string>
     <string name="memo_title_empty_error">Please provide a title for this memo</string>
     <string name="memo_text_empty_error">Please provide a memo description</string>
     <string name="permission_denied_title">Permission required</string>

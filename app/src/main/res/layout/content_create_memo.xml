@@ -48,13 +48,25 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/memo_description_container" />
 
+    <TextView
+        android:id="@+id/map_hint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/padding_activity"
+        android:text="@string/memo_map_hint"
+        android:textSize="14sp"
+        android:textAppearance="?attr/textAppearanceBodySmall"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/location_reminder_checkbox" />
+
     <org.osmdroid.views.MapView
         android:id="@+id/map"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="@dimen/padding_activity"
+        android:layout_marginTop="8dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/location_reminder_checkbox" />
+        app:layout_constraintTop_toBottomOf="@id/map_hint" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
