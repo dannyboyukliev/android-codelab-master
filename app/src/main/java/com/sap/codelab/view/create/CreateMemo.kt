@@ -161,7 +161,9 @@ internal class CreateMemo : AppCompatActivity() {
         }
 
         binding.contentCreateMemo.locationReminderCheckbox.setOnCheckedChangeListener { buttonView, isChecked ->
-            map.visibility = if (isChecked) View.VISIBLE else View.GONE
+            val visibility = if (isChecked) View.VISIBLE else View.GONE
+            map.visibility = visibility
+            binding.contentCreateMemo.mapHint.visibility = visibility
             if (!buttonView.isPressed) return@setOnCheckedChangeListener
             if (isChecked) {
                 requestPermissionsForLocationReminder()
