@@ -45,7 +45,7 @@ internal class NotificationHelper @Inject constructor(
         )
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(memo.title)
             .setContentText(memo.description.take(140))
             .setContentIntent(pendingIntent)
