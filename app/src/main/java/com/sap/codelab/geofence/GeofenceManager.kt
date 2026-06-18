@@ -35,7 +35,7 @@ internal class GeofenceManager @Inject constructor(
             .setRequestId(memoId.toString())
             .setCircularRegion(latitude, longitude, GEOFENCE_RADIUS_METERS)
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
-            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT)
             .build()
 
         val request = GeofencingRequest.Builder()
